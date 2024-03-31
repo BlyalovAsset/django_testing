@@ -1,11 +1,18 @@
 import random
-from datetime import datetime, timedelta
+
+from datetime import datetime
+from datetime import timedelta
 
 import pytest
-from django.conf import settings
+
 from django.urls import reverse
+
+from django.conf import settings
+
 from django.utils import timezone
-from news.models import Comment, News
+
+from news.models import Comment
+from news.models import News
 
 COMMENT_TEXT = 'Замечания'
 
@@ -23,11 +30,10 @@ def author_client(author, client):
 
 @pytest.fixture
 def news():
-    news = News.objects.create(
+    return News.objects.create(
         title='Заголовок',
         text='Текст заметки',
     )
-    return news
 
 
 @pytest.fixture
@@ -46,12 +52,11 @@ def eleven_news():
 
 @pytest.fixture
 def comment(news, author):
-    comment = Comment.objects.create(
+    return Comment.objects.create(
         news=news,
         author=author,
         text=COMMENT_TEXT,
     )
-    return comment
 
 
 @pytest.fixture
@@ -60,7 +65,7 @@ def news_with_ten_comments(news, author):
     end_date = start_date + timedelta(days=10)
     for index in range(10):
         comment = Comment.objects.create(
-            news=news, author=author, text=f'Tекст {index}',
+            news=news, author=author, text=f'Текст {index}',
         )
         comment.created = (
             start_date + (end_date - start_date) * random.random()
@@ -70,7 +75,7 @@ def news_with_ten_comments(news, author):
 
 
 @pytest.fixture
-def url_news_detail(news):
+def url_news_det ail(news):
     return reverse('news:detail', args=(news.id,))
 
 

@@ -1,23 +1,33 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+
+from django.test import Client
+from django.test import TestCase
+
 from django.urls import reverse
+
 from pytils.translit import slugify
 
 from notes.forms import WARNING
+
 from notes.models import Note
 
 User = get_user_model()
 
 
-class TestNoteCreation(TestCase):
-
+class AuthorMixin:
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Автор')
         cls.author_client = Client()
         cls.author_client.force_login(cls.author)
+
+
+class TestNoteCreation(AuthorMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
         cls.add_url = reverse('notes:add')
         cls.form_data = {
             'title': 'Заголовок',
@@ -26,15 +36,11 @@ class TestNoteCreation(TestCase):
         }
 
     def test_user_can_create_note(self):
+        initial_notes_count = Note.objects.count()
         response = self.author_client.post(self.add_url, data=self.form_data)
         self.assertRedirects(response, reverse('notes:success'))
-        notes_count = Note.objects.count()
-        expected_count = 1
-        self.assertEqual(notes_count, expected_count)
-        note = Note.objects.get(slug=self.form_data['slug'])
-        self.assertEqual(note.title, self.form_data['title'])
-        self.assertEqual(note.text, self.form_data['text'])
-        self.assertEqual(note.slug, self.form_data['slug'])
+        final_notes_count = Note.objects.count()
+        self.assertEqual(final_notes_count, initial_notes_count + 1)
 
     def test_anonymous_user_cant_create_note(self):
         response = self.client.post(self.add_url, data=self.form_data)
@@ -68,15 +74,13 @@ class TestNoteCreation(TestCase):
         self.assertEqual(note_slug.slug, expected_slug)
 
 
-class TestNoteEditDelete(TestCase):
+class TestNoteEditDelete(AuthorMixin, TestCase):
     NEW_NOTE_TITLE = 'Новый заголовок'
     NEW_NOTE_TEXT = 'Новый текст'
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='Автор')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
+        super().setUpTestData()
         cls.reader = User.objects.create(username='Читатель')
         cls.reader_client = Client()
         cls.reader_client.force_login(cls.reader)

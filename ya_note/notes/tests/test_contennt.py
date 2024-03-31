@@ -1,6 +1,12 @@
-from django.test import Client, TestCase
+from django.test import Client
+from django.test import TestCase
+
 from django.urls import reverse
+
 from notes.models import Note
+
+from notes.forms import NoteForm
+
 from notes.tests.test_routes import User
 
 
@@ -41,3 +47,4 @@ class TestContent(TestCase):
             with self.subTest():
                 response = self.author_logged.get(url)
                 self.assertIn('form', response.context)
+                self.assertTrue(isinstance(response.context['form'], NoteForm))
