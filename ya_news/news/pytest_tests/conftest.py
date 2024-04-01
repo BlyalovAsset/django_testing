@@ -75,7 +75,7 @@ def news_with_ten_comments(news, author):
 
 
 @pytest.fixture
-def url_news_det ail(news):
+def url_news_detail(news):
     return reverse('news:detail', args=(news.id,))
 
 
