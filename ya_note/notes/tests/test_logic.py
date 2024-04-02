@@ -1,27 +1,17 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-
 from django.test import Client
 from django.test import TestCase
-
 from django.urls import reverse
-
 from pytils.translit import slugify
 
+from .mixins import AuthorMixin
 from notes.forms import WARNING
-
 from notes.models import Note
 
+
 User = get_user_model()
-
-
-class AuthorMixin:
-    @classmethod
-    def setUpTestData(cls):
-        cls.author = User.objects.create(username='Автор')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
 
 
 class TestNoteCreation(AuthorMixin, TestCase):
@@ -43,13 +33,13 @@ class TestNoteCreation(AuthorMixin, TestCase):
         self.assertEqual(final_notes_count, initial_notes_count + 1)
 
     def test_anonymous_user_cant_create_note(self):
+        initial_notes_count = Note.objects.count()
         response = self.client.post(self.add_url, data=self.form_data)
         login_url = reverse('users:login')
         expected_url = f'{login_url}?next={self.add_url}'
         self.assertRedirects(response, expected_url)
         notes_count = Note.objects.count()
-        expected_count = 0
-        self.assertEqual(notes_count, expected_count)
+        self.assertEqual(notes_count, initial_notes_count)
 
     def test_not_unique_slug(self):
         self.author_client.post(self.add_url, data=self.form_data)
@@ -63,12 +53,12 @@ class TestNoteCreation(AuthorMixin, TestCase):
         )
 
     def test_empty_slug(self):
+        initial_notes_count = Note.objects.count()
         self.form_data.pop('slug')
         response = self.author_client.post(self.add_url, data=self.form_data)
         self.assertRedirects(response, reverse('notes:success'))
         notes_count = Note.objects.count()
-        expected_count = 1
-        self.assertEqual(notes_count, expected_count)
+        self.assertEqual(notes_count, initial_notes_count + 1)
         expected_slug = slugify(self.form_data['title'])
         note_slug = Note.objects.get(slug=expected_slug)
         self.assertEqual(note_slug.slug, expected_slug)
@@ -112,15 +102,15 @@ class TestNoteEditDelete(AuthorMixin, TestCase):
         self.assertEqual(self.note.text, note_from_db.text)
 
     def test_author_can_delete_note(self):
+        initial_notes_count = Note.objects.count()
         response = self.author_client.post(self.delete_note, self.form_data)
         self.assertRedirects(response, reverse('notes:success'))
-        notes_count = Note.objects.count()
-        expected_count = 0
-        self.assertEqual(notes_count, expected_count)
+        notes_count = Note.objects.count() + 1
+        self.assertEqual(notes_count, initial_notes_count)
 
     def test_other_user_cant_delete_note(self):
+        initial_notes_count = Note.objects.count()
         response = self.reader_client.post(self.delete_note, self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         notes_count = Note.objects.count()
-        expected_count = 1
-        self.assertEqual(notes_count, expected_count)
+        self.assertEqual(notes_count, initial_notes_count)

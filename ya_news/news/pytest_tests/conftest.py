@@ -5,8 +5,6 @@ from datetime import timedelta
 
 import pytest
 
-from django.urls import reverse
-
 from django.conf import settings
 
 from django.utils import timezone
@@ -72,38 +70,3 @@ def news_with_ten_comments(news, author):
         )
         comment.save()
     return news
-
-
-@pytest.fixture
-def url_news_detail(news):
-    return reverse('news:detail', args=(news.id,))
-
-
-@pytest.fixture
-def url_comment_delete(comment):
-    return reverse('news:delete', args=(comment.id,))
-
-
-@pytest.fixture
-def url_comment_edit(comment):
-    return reverse('news:edit', args=(comment.id,))
-
-
-@pytest.fixture
-def url_news_home():
-    return reverse('news:home')
-
-
-@pytest.fixture
-def url_user_login():
-    return reverse('users:login')
-
-
-@pytest.fixture
-def url_user_logout():
-    return reverse('users:logout')
-
-
-@pytest.fixture
-def url_user_signup():
-    return reverse('users:signup')

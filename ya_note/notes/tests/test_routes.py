@@ -1,26 +1,25 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-
 from django.test import Client
 from django.test import TestCase
-
 from django.urls import reverse
 
+from .mixins import AuthorMixin
 from notes.models import Note
+
 
 User = get_user_model()
 
 
-class TestRoutes(TestCase):
+class TestRoutes(AuthorMixin, TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='Автор')
+        super().setUpTestData()
+        cls.author_logged = cls.author_client
         cls.reader = User.objects.create(username='Читатель')
-        cls.author_logged = Client()
         cls.reader_logged = Client()
-        cls.author_logged.force_login(cls.author)
         cls.reader_logged.force_login(cls.reader)
         cls.note = Note.objects.create(
             title='Заголовок',

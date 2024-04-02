@@ -1,24 +1,19 @@
-from django.test import Client
-from django.test import TestCase
-
+from django.test import Client, TestCase
 from django.urls import reverse
 
-from notes.models import Note
-
+from .mixins import AuthorMixin
 from notes.forms import NoteForm
-
+from notes.models import Note
 from notes.tests.test_routes import User
 
 
-class TestContent(TestCase):
+class TestContent(AuthorMixin, TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='Автор')
+        super().setUpTestData()
         cls.reader = User.objects.create(username='Читатель')
-        cls.author_logged = Client()
         cls.reader_logged = Client()
-        cls.author_logged.force_login(cls.author)
         cls.reader_logged.force_login(cls.reader)
         cls.note = Note.objects.create(
             title='Заголовок',
@@ -32,7 +27,7 @@ class TestContent(TestCase):
 
     def test_notes_list_for_different_users(self):
         users_statuses = (
-            (self.author_logged, True),
+            (self.author_client, True),
             (self.reader_logged, False),
         )
         for user, status in users_statuses:
@@ -41,10 +36,10 @@ class TestContent(TestCase):
                 object_list = response.context['object_list']
                 self.assertEqual(self.note in object_list, status)
 
-    def test_pages_contains_form(self):
+    def test_pages_contain_form(self):
         urls = (self.URL_NOTES_ADD, self.URL_NOTES_EDIT)
         for url in urls:
             with self.subTest():
-                response = self.author_logged.get(url)
+                response = self.author_client.get(url)
                 self.assertIn('form', response.context)
                 self.assertTrue(isinstance(response.context['form'], NoteForm))
