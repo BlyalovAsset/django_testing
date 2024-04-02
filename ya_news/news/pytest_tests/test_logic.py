@@ -2,7 +2,7 @@ from http import HTTPStatus
 import pytest
 from random import choice
 
-from news.forms import BAD_WORDS 
+from news.forms import BAD_WORDS
 from news.forms import WARNING
 from news.models import Comment
 from news.pytest_tests.conftest import COMMENT_TEXT
