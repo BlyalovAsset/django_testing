@@ -1,12 +1,10 @@
 import random
-import pytest
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
+import pytest
 from django.conf import settings
 from django.utils import timezone
-from news.models import Comment
-from news.models import News
+from news.models import Comment, News
 
 COMMENT_TEXT = 'Замечания'
 
