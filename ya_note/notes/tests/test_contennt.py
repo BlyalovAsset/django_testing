@@ -1,9 +1,9 @@
 from django.test import Client, TestCase
 from django.urls import reverse
+
 from notes.forms import NoteForm
 from notes.models import Note
 from notes.tests.test_routes import User
-
 from .mixins import AuthorMixin
 
 

@@ -3,10 +3,11 @@ from random import choice
 
 import pytest
 from django.urls import reverse
+from pytest_django.asserts import assertFormError, assertRedirects
+
 from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
 from news.pytest_tests.conftest import COMMENT_TEXT
-from pytest_django.asserts import assertFormError, assertRedirects
 
 NEW_COMMENT_TEXT = 'Новый текст комментария'
 form_data = {'text': NEW_COMMENT_TEXT}
